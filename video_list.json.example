@@ -1,0 +1,38 @@
+{
+  "summary": {
+    "sampling_method": "channel_stratified_top_percent",
+    "top_percent_per_channel": 10.0,
+    "min_comments_threshold": 100,
+    "total_videos_scanned": 498988,
+    "total_comments_scanned": 23438487,
+    "total_selected_videos": 30693,
+    "total_selected_comments": 13311255,
+    "selected_channel_distribution": {
+      "中天新聞": 5777,
+      "華視新聞 CH52": 1923,
+      "風傳媒 The Storm Media": 62
+    }
+  },
+  "videos": [
+    {
+      "channel": "中天新聞",
+      "year_month": "2024-03",
+      "video_id": "okb9JREFw_0",
+      "title": "【全程字幕】美國將面臨重大\"軍事空窗期\"! 郭正亮驚曝他們用\"這事\"壞兩岸局面來拖延時間..",
+      "description": "#美國#大陸#台灣#選舉#軍事空窗期#南海#反中線#兩岸關係#監督的力量在中天",
+      "published_at": "2024-03-31T12:00:38Z",
+      "tags": [
+        "中天新聞",
+        "中天",
+        "CTI",
+        "CTINEWS",
+        "中天新闻"
+      ],
+      "view_count": 3406247,
+      "like_count": 27518,
+      "comment_count": 1985,
+      "url": "https://www.youtube.com/watch?v=okb9JREFw_0",
+      "thumbnail": "https://i.ytimg.com/vi/okb9JREFw_0/maxresdefault.jpg"
+    }
+  ]
+}
