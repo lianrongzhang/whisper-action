@@ -29,6 +29,45 @@ case "$model" in
     ;;
 esac
 
+# Function to download audio using yt-dlp and process with whisper
+process_youtube_video() {
+  youtube_url=$1
+  
+  echo "Downloading audio from: ${youtube_url}"
+  
+  # Create temporary directory for download
+  temp_dir=$(mktemp -d)
+  
+  # Download audio using yt-dlp
+  # Extract audio in best quality, output as m4a
+  yt-dlp -f 'bestaudio[ext=m4a]/bestaudio' \
+    --extract-audio \
+    --audio-format m4a \
+    -o "${temp_dir}/audio.%(ext)s" \
+    "${youtube_url}"
+  
+  # Find the downloaded audio file
+  audio_file=$(find "${temp_dir}" -type f -name "audio.*" | head -n 1)
+  
+  if [ -z "$audio_file" ] || [ ! -f "$audio_file" ]; then
+    echo "Error: Failed to download audio"
+    rm -rf "${temp_dir}"
+    return 1
+  fi
+  
+  echo "Audio downloaded to: ${audio_file}"
+  
+  # Process with go-whisper using the downloaded audio file
+  # Unset INPUT_YOUTUBE_URL and set INPUT_AUDIO_PATH
+  unset INPUT_YOUTUBE_URL
+  export INPUT_AUDIO_PATH="${audio_file}"
+  
+  sh -c "/bin/go-whisper $*"
+  
+  # Clean up temporary directory
+  rm -rf "${temp_dir}"
+}
+
 # Check if video_list_file is provided
 if [ -n "${INPUT_VIDEO_LIST_FILE:-}" ] && [ -f "${INPUT_VIDEO_LIST_FILE}" ]; then
   echo "Processing videos from file: ${INPUT_VIDEO_LIST_FILE}"
@@ -42,13 +81,16 @@ if [ -n "${INPUT_VIDEO_LIST_FILE:-}" ] && [ -f "${INPUT_VIDEO_LIST_FILE}" ]; the
   while read -r video_id; do
     if [ -n "$video_id" ]; then
       echo "Processing video: $video_id"
-      export INPUT_YOUTUBE_URL="https://www.youtube.com/watch?v=${video_id}"
-      sh -c "/bin/go-whisper $*"
+      youtube_url="https://www.youtube.com/watch?v=${video_id}"
+      process_youtube_video "${youtube_url}"
     fi
   done < "$video_ids_file"
   
   rm -f "$video_ids_file"
+elif [ -n "${INPUT_YOUTUBE_URL:-}" ]; then
+  # Download with yt-dlp and process
+  process_youtube_video "${INPUT_YOUTUBE_URL}"
 else
-  # Original behavior: process single video
+  # Original behavior: process audio file directly
   sh -c "/bin/go-whisper $*"
 fi
