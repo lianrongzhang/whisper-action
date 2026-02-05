@@ -1,0 +1,47 @@
+name: Batch Process Videos from JSON
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'video_list.json'
+
+jobs:
+  batch-process-videos:
+    name: Process multiple videos from JSON file
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: speech to text for multiple videos
+        uses: ./
+        with:
+          model: small
+          video_list_file: video_list.json
+          output_format: txt,srt,csv
+          output_folder: youtube
+          print_segment: true
+          debug: true
+
+      - name: Create archive of transcriptions
+        run: |
+          timestamp=$(date +%Y%m%d-%H%M%S)
+          tar -czf transcriptions-${timestamp}.tar.gz youtube/
+          echo "ARCHIVE_NAME=transcriptions-${timestamp}.tar.gz" >> $GITHUB_ENV
+          echo "RELEASE_TAG=transcriptions-${timestamp}" >> $GITHUB_ENV
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Transcriptions ${{ env.RELEASE_TAG }}
+          body: |
+            Automated transcription results from batch processing
+            - Generated: ${{ env.RELEASE_TAG }}
+            - Source: video_list.json
+          files: ${{ env.ARCHIVE_NAME }}
+          draft: false
+          prerelease: false

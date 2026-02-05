@@ -17,13 +17,16 @@ See [action.yml](./action.yml) for more detailed information.
 | print_progress   | print progress.                                              | true    |
 | print_segment    | print segment.                                               |         |
 | youtube_url      | youtube url                                                  |         |
+| video_list_file  | path to JSON file containing video list with video_id fields|         |
 | translate        | translate from source language to english.                   | false   |
 | cut_silences     | cut silences.                                                | false   |
 | prompt           | initial prompt text.                                         |         |
 
 ## Usage
 
-Donwload Youtube video and transcript it.
+### Single Video
+
+Download Youtube video and transcript it.
 
 ```yaml
 jobs:
@@ -54,5 +57,78 @@ jobs:
         ssh_key: ${{ secrets.DEPLOY_KEY }}
         rebase: true
 ```
+
+### Batch Processing Multiple Videos
+
+Process multiple videos from a JSON file containing video IDs.
+
+First, create a JSON file (e.g., `video_list.json`) with the following format:
+
+```json
+{
+  "summary": {
+    "total_videos_scanned": 3,
+    "total_selected_videos": 3
+  },
+  "videos": [
+    {
+      "channel": "Channel Name",
+      "video_id": "pTCxXZh6VyE",
+      "title": "Video Title 1"
+    },
+    {
+      "channel": "Channel Name",
+      "video_id": "M_bjhKtR3fs",
+      "title": "Video Title 2"
+    }
+  ]
+}
+```
+
+Then use the `video_list_file` parameter in your workflow:
+
+```yaml
+jobs:
+  batch-process-videos:
+    name: transcript multiple videos
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: checkout
+      uses: actions/checkout@v3
+
+    - name: speech to text for multiple videos
+      uses: appleboy/whisper-action@v0.1.1
+      with:
+        model: small
+        video_list_file: video_list.json
+        output_format: txt,srt,csv
+        output_folder: youtube
+        print_segment: true
+        debug: true
+
+    - name: Create archive of transcriptions
+      run: |
+        timestamp=$(date +%Y%m%d-%H%M%S)
+        tar -czf transcriptions-${timestamp}.tar.gz youtube/
+        echo "ARCHIVE_NAME=transcriptions-${timestamp}.tar.gz" >> $GITHUB_ENV
+        echo "RELEASE_TAG=transcriptions-${timestamp}" >> $GITHUB_ENV
+
+    - name: Create Release and Upload Assets
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.RELEASE_TAG }}
+        name: Transcriptions ${{ env.RELEASE_TAG }}
+        body: |
+          Automated transcription results from batch processing
+          - Generated: ${{ env.RELEASE_TAG }}
+          - Source: video_list.json
+        files: ${{ env.ARCHIVE_NAME }}
+        draft: false
+        prerelease: false
+```
+
+The action will automatically read the `video_id` field from each video in the JSON file and process them sequentially. The transcription results will be uploaded as a GitHub Release asset.
 
 See the output file in youtube folder.

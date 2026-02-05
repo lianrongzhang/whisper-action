@@ -1,0 +1,30 @@
+{
+  "summary": {
+    "sampling_method": "channel_stratified_top_percent",
+    "total_videos_scanned": 3,
+    "total_selected_videos": 3
+  },
+  "videos": [
+    {
+      "channel": "中天新聞",
+      "year_month": "2024-03",
+      "video_id": "pTCxXZh6VyE",
+      "title": "Test Video 1",
+      "url": "https://www.youtube.com/watch?v=pTCxXZh6VyE"
+    },
+    {
+      "channel": "測試頻道",
+      "year_month": "2024-03",
+      "video_id": "M_bjhKtR3fs",
+      "title": "Test Video 2",
+      "url": "https://www.youtube.com/watch?v=M_bjhKtR3fs"
+    },
+    {
+      "channel": "測試頻道",
+      "year_month": "2024-03",
+      "video_id": "4Yei_t6eMZU",
+      "title": "Test Video 3",
+      "url": "https://www.youtube.com/watch?v=4Yei_t6eMZU"
+    }
+  ]
+}
