@@ -52,7 +52,7 @@ process_youtube_video() {
   if [ -n "${INPUT_YOUTUBE_COOKIES:-}" ]; then
     echo "Using provided YouTube cookies for authentication"
     cookies_file="${temp_dir}/cookies.txt"
-    printf '%s\n' "${INPUT_YOUTUBE_COOKIES}" > "${cookies_file}"
+    printf '%s' "${INPUT_YOUTUBE_COOKIES}" > "${cookies_file}"
     chmod 600 "${cookies_file}"
     cookies_arg="--cookies ${cookies_file}"
   fi
