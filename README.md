@@ -26,7 +26,7 @@ See [action.yml](./action.yml) for more detailed information.
 
 ### Single Video
 
-Donwload Youtube video and transcript it.
+Download Youtube video and transcript it.
 
 ```yaml
 jobs:

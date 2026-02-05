@@ -33,15 +33,21 @@ esac
 if [ -n "${INPUT_VIDEO_LIST_FILE:-}" ] && [ -f "${INPUT_VIDEO_LIST_FILE}" ]; then
   echo "Processing videos from file: ${INPUT_VIDEO_LIST_FILE}"
   
-  # Extract video_ids from JSON file and process each one
+  # Extract video_ids from JSON file and save to temp file
   # Use grep to find video_id lines, then extract the value
-  grep -o '"video_id": *"[^"]*"' "${INPUT_VIDEO_LIST_FILE}" | cut -d'"' -f4 | while read -r video_id; do
+  video_ids_file=$(mktemp)
+  grep -o '"video_id": *"[^"]*"' "${INPUT_VIDEO_LIST_FILE}" | cut -d'"' -f4 > "$video_ids_file"
+  
+  # Process each video_id
+  while read -r video_id; do
     if [ -n "$video_id" ]; then
       echo "Processing video: $video_id"
       export INPUT_YOUTUBE_URL="https://www.youtube.com/watch?v=${video_id}"
       sh -c "/bin/go-whisper $*"
     fi
-  done
+  done < "$video_ids_file"
+  
+  rm -f "$video_ids_file"
 else
   # Original behavior: process single video
   sh -c "/bin/go-whisper $*"
