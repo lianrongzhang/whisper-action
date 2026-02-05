@@ -32,6 +32,7 @@ esac
 # Function to download audio using yt-dlp and process with whisper
 process_youtube_video() {
   youtube_url=$1
+  shift
   
   echo "Downloading audio from: ${youtube_url}"
   
@@ -39,10 +40,8 @@ process_youtube_video() {
   temp_dir=$(mktemp -d)
   
   # Download audio using yt-dlp
-  # Extract audio in best quality, output as m4a
+  # Use format selector to get best audio, preferably in m4a
   yt-dlp -f 'bestaudio[ext=m4a]/bestaudio' \
-    --extract-audio \
-    --audio-format m4a \
     -o "${temp_dir}/audio.%(ext)s" \
     "${youtube_url}"
   
@@ -62,7 +61,7 @@ process_youtube_video() {
   unset INPUT_YOUTUBE_URL
   export INPUT_AUDIO_PATH="${audio_file}"
   
-  sh -c "/bin/go-whisper $*"
+  sh -c "/bin/go-whisper $@"
   
   # Clean up temporary directory
   rm -rf "${temp_dir}"
@@ -82,15 +81,15 @@ if [ -n "${INPUT_VIDEO_LIST_FILE:-}" ] && [ -f "${INPUT_VIDEO_LIST_FILE}" ]; the
     if [ -n "$video_id" ]; then
       echo "Processing video: $video_id"
       youtube_url="https://www.youtube.com/watch?v=${video_id}"
-      process_youtube_video "${youtube_url}"
+      process_youtube_video "${youtube_url}" "$@"
     fi
   done < "$video_ids_file"
   
   rm -f "$video_ids_file"
 elif [ -n "${INPUT_YOUTUBE_URL:-}" ]; then
   # Download with yt-dlp and process
-  process_youtube_video "${INPUT_YOUTUBE_URL}"
+  process_youtube_video "${INPUT_YOUTUBE_URL}" "$@"
 else
   # Original behavior: process audio file directly
-  sh -c "/bin/go-whisper $*"
+  sh -c "/bin/go-whisper $@"
 fi
