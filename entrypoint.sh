@@ -45,14 +45,15 @@ process_youtube_video() {
   
   # Download audio using yt-dlp
   # Use best audio format and extract to mp3 with 192k quality
-  # Skip problematic dash/hls formats and add User-Agent header
+  # Use Android and web player clients to bypass bot detection
   if ! yt-dlp \
     -f 'bestaudio/best' \
     --extract-audio \
     --audio-format mp3 \
     --audio-quality 192K \
-    --extractor-args 'youtube:skip=dash,hls' \
+    --extractor-args "youtube:player_client=android,web" \
     --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' \
+    --no-check-certificate \
     --no-warnings \
     -o "${temp_dir}/audio.%(ext)s" \
     "${youtube_url}"; then
