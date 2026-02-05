@@ -54,10 +54,11 @@ process_youtube_video() {
   fi
   
   # Find the downloaded audio file
-  audio_file=$(find "${temp_dir}" -type f -name "audio.*" | head -n 1)
+  # The file should be named audio.* based on our output template
+  audio_file=$(ls "${temp_dir}"/audio.* 2>/dev/null | head -n 1)
   
   if [ -z "$audio_file" ] || [ ! -f "$audio_file" ]; then
-    echo "Error: Failed to download audio"
+    echo "Error: Audio file not found after download"
     rm -rf "${temp_dir}"
     return 1
   fi
