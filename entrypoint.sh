@@ -61,7 +61,7 @@ process_youtube_video() {
   unset INPUT_YOUTUBE_URL
   export INPUT_AUDIO_PATH="${audio_file}"
   
-  sh -c "/bin/go-whisper $@"
+  /bin/go-whisper "$@"
   
   # Clean up temporary directory
   rm -rf "${temp_dir}"
@@ -91,5 +91,5 @@ elif [ -n "${INPUT_YOUTUBE_URL:-}" ]; then
   process_youtube_video "${INPUT_YOUTUBE_URL}" "$@"
 else
   # Original behavior: process audio file directly
-  sh -c "/bin/go-whisper $@"
+  /bin/go-whisper "$@"
 fi
