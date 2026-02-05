@@ -38,12 +38,20 @@ process_youtube_video() {
   
   # Create temporary directory for download
   temp_dir=$(mktemp -d)
+  if [ -z "$temp_dir" ] || [ ! -d "$temp_dir" ]; then
+    echo "Error: Failed to create temporary directory"
+    return 1
+  fi
   
   # Download audio using yt-dlp
   # Use format selector to get best audio, preferably in m4a
-  yt-dlp -f 'bestaudio[ext=m4a]/bestaudio' \
+  if ! yt-dlp -f 'bestaudio[ext=m4a]/bestaudio' \
     -o "${temp_dir}/audio.%(ext)s" \
-    "${youtube_url}"
+    "${youtube_url}"; then
+    echo "Error: yt-dlp failed to download audio"
+    rm -rf "${temp_dir}"
+    return 1
+  fi
   
   # Find the downloaded audio file
   audio_file=$(find "${temp_dir}" -type f -name "audio.*" | head -n 1)
@@ -61,10 +69,14 @@ process_youtube_video() {
   unset INPUT_YOUTUBE_URL
   export INPUT_AUDIO_PATH="${audio_file}"
   
+  # Call go-whisper and capture exit code
   /bin/go-whisper "$@"
+  exit_code=$?
   
   # Clean up temporary directory
   rm -rf "${temp_dir}"
+  
+  return $exit_code
 }
 
 # Check if video_list_file is provided
