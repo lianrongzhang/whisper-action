@@ -92,6 +92,8 @@ jobs:
   batch-process-videos:
     name: transcript multiple videos
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - name: checkout
       uses: actions/checkout@v3
@@ -106,17 +108,27 @@ jobs:
         print_segment: true
         debug: true
 
-    - name: git push changes
-      uses: appleboy/git-push-action@v0.0.2
+    - name: Create archive of transcriptions
+      run: |
+        timestamp=$(date +%Y%m%d-%H%M%S)
+        tar -czf transcriptions-${timestamp}.tar.gz youtube/
+        echo "ARCHIVE_NAME=transcriptions-${timestamp}.tar.gz" >> $GITHUB_ENV
+        echo "RELEASE_TAG=transcriptions-${timestamp}" >> $GITHUB_ENV
+
+    - name: Create Release and Upload Assets
+      uses: softprops/action-gh-release@v1
       with:
-        branch: main
-        commit: true
-        commit_message: "[skip ci] Upload transcriptions"
-        remote: git@github.com:appleboy/whisper-action.git
-        ssh_key: ${{ secrets.DEPLOY_KEY }}
-        rebase: true
+        tag_name: ${{ env.RELEASE_TAG }}
+        name: Transcriptions ${{ env.RELEASE_TAG }}
+        body: |
+          Automated transcription results from batch processing
+          - Generated: ${{ env.RELEASE_TAG }}
+          - Source: video_list.json
+        files: ${{ env.ARCHIVE_NAME }}
+        draft: false
+        prerelease: false
 ```
 
-The action will automatically read the `video_id` field from each video in the JSON file and process them sequentially.
+The action will automatically read the `video_id` field from each video in the JSON file and process them sequentially. The transcription results will be uploaded as a GitHub Release asset.
 
 See the output file in youtube folder.

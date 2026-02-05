@@ -26,12 +26,22 @@ jobs:
           print_segment: true
           debug: true
 
-      - name: git push changes
-        uses: appleboy/git-push-action@v0.0.3
+      - name: Create archive of transcriptions
+        run: |
+          timestamp=$(date +%Y%m%d-%H%M%S)
+          tar -czf transcriptions-${timestamp}.tar.gz youtube/
+          echo "ARCHIVE_NAME=transcriptions-${timestamp}.tar.gz" >> $GITHUB_ENV
+          echo "RELEASE_TAG=transcriptions-${timestamp}" >> $GITHUB_ENV
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
         with:
-          branch: main
-          commit: true
-          commit_message: "[skip ci] Upload transcriptions"
-          remote: git@github.com:lianrongzhang/whisper-action.git
-          ssh_key: ${{ secrets.DEPLOY_KEY }}
-          rebase: true
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Transcriptions ${{ env.RELEASE_TAG }}
+          body: |
+            Automated transcription results from batch processing
+            - Generated: ${{ env.RELEASE_TAG }}
+            - Source: video_list.json
+          files: ${{ env.ARCHIVE_NAME }}
+          draft: false
+          prerelease: false
