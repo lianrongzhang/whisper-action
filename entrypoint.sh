@@ -52,7 +52,7 @@ process_youtube_video() {
     --audio-format mp3 \
     --audio-quality 192K \
     --extractor-args 'youtube:skip=dash,hls' \
-    --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' \
+    --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' \
     --no-warnings \
     -o "${temp_dir}/audio.%(ext)s" \
     "${youtube_url}"; then
