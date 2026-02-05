@@ -44,8 +44,16 @@ process_youtube_video() {
   fi
   
   # Download audio using yt-dlp
-  # Use format selector to get best audio, preferably in m4a
-  if ! yt-dlp -f 'bestaudio[ext=m4a]/bestaudio' \
+  # Use best audio format and extract to mp3 with 192k quality
+  # Skip problematic dash/hls formats and add User-Agent header
+  if ! yt-dlp \
+    -f 'bestaudio/best' \
+    --extract-audio \
+    --audio-format mp3 \
+    --audio-quality 192K \
+    --extractor-args 'youtube:skip=dash,hls' \
+    --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' \
+    --no-warnings \
     -o "${temp_dir}/audio.%(ext)s" \
     "${youtube_url}"; then
     echo "Error: yt-dlp failed to download audio"
