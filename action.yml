@@ -31,6 +31,9 @@ inputs:
     description: 'cut silences'
   prompt:
     description: 'initial prompt'
+  youtube_cookies:
+    description: 'YouTube cookies for authentication (optional, helps avoid bot detection)'
+    required: false
 runs:
   using: 'docker'
   image: 'Dockerfile'

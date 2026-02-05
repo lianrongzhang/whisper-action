@@ -46,6 +46,20 @@ process_youtube_video() {
   # Download audio using yt-dlp
   # Use best audio format and extract to mp3 with 192k quality
   # Use Android and web player clients to bypass bot detection
+  
+  # Set up cookies file if provided via INPUT_YOUTUBE_COOKIES environment variable
+  cookies_arg=""
+  if [ -n "${INPUT_YOUTUBE_COOKIES:-}" ]; then
+    echo "Using provided YouTube cookies for authentication"
+    cookies_file="${temp_dir}/cookies.txt"
+    printf '%s' "${INPUT_YOUTUBE_COOKIES}" > "${cookies_file}"
+    chmod 600 "${cookies_file}"
+    cookies_arg="--cookies ${cookies_file}"
+  fi
+  
+  # Execute yt-dlp command
+  # Note: cookies_arg is intentionally unquoted to allow it to be empty or expand to two arguments
+  # shellcheck disable=SC2086
   if ! yt-dlp \
     -f 'bestaudio/best' \
     --extract-audio \
@@ -55,6 +69,7 @@ process_youtube_video() {
     --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' \
     --no-check-certificate \
     --no-warnings \
+    ${cookies_arg} \
     -o "${temp_dir}/audio.%(ext)s" \
     "${youtube_url}"; then
     echo "Error: yt-dlp failed to download audio"
