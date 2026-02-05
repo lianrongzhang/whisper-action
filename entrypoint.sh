@@ -47,29 +47,31 @@ process_youtube_video() {
   # Use best audio format and extract to mp3 with 192k quality
   # Use Android and web player clients to bypass bot detection
   
-  # Build yt-dlp command with optional cookies support
-  yt_dlp_cmd="yt-dlp \
+  # Set up cookies file if provided via INPUT_YOUTUBE_COOKIES environment variable
+  cookies_arg=""
+  if [ -n "${INPUT_YOUTUBE_COOKIES:-}" ]; then
+    echo "Using provided YouTube cookies for authentication"
+    cookies_file="${temp_dir}/cookies.txt"
+    printf '%s\n' "${INPUT_YOUTUBE_COOKIES}" > "${cookies_file}"
+    chmod 600 "${cookies_file}"
+    cookies_arg="--cookies ${cookies_file}"
+  fi
+  
+  # Execute yt-dlp command
+  # Note: cookies_arg is intentionally unquoted to allow it to be empty or expand to two arguments
+  # shellcheck disable=SC2086
+  if ! yt-dlp \
     -f 'bestaudio/best' \
     --extract-audio \
     --audio-format mp3 \
     --audio-quality 192K \
-    --extractor-args \"youtube:player_client=android,web\" \
+    --extractor-args "youtube:player_client=android,web" \
     --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' \
     --no-check-certificate \
-    --no-warnings"
-  
-  # Add cookies if provided via INPUT_YOUTUBE_COOKIES environment variable
-  if [ -n "${INPUT_YOUTUBE_COOKIES:-}" ]; then
-    echo "Using provided YouTube cookies for authentication"
-    cookies_file="${temp_dir}/cookies.txt"
-    echo "${INPUT_YOUTUBE_COOKIES}" > "${cookies_file}"
-    yt_dlp_cmd="${yt_dlp_cmd} --cookies \"${cookies_file}\""
-  fi
-  
-  yt_dlp_cmd="${yt_dlp_cmd} -o \"${temp_dir}/audio.%(ext)s\" \"${youtube_url}\""
-  
-  # Execute the command
-  if ! eval "${yt_dlp_cmd}"; then
+    --no-warnings \
+    ${cookies_arg} \
+    -o "${temp_dir}/audio.%(ext)s" \
+    "${youtube_url}"; then
     echo "Error: yt-dlp failed to download audio"
     rm -rf "${temp_dir}"
     return 1
