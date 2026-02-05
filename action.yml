@@ -23,6 +23,8 @@ inputs:
     description: 'print segment.'
   youtube_url:
     description: 'youtube url'
+  video_list_file:
+    description: 'path to JSON file containing video list with video_id fields'
   translate:
     description: 'translate from source language to english'
   cut_silences:

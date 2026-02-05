@@ -29,4 +29,20 @@ case "$model" in
     ;;
 esac
 
-sh -c "/bin/go-whisper $*"
+# Check if video_list_file is provided
+if [ -n "${INPUT_VIDEO_LIST_FILE:-}" ] && [ -f "${INPUT_VIDEO_LIST_FILE}" ]; then
+  echo "Processing videos from file: ${INPUT_VIDEO_LIST_FILE}"
+  
+  # Extract video_ids from JSON file and process each one
+  # Use grep to find video_id lines, then extract the value
+  grep -o '"video_id": *"[^"]*"' "${INPUT_VIDEO_LIST_FILE}" | cut -d'"' -f4 | while read -r video_id; do
+    if [ -n "$video_id" ]; then
+      echo "Processing video: $video_id"
+      export INPUT_YOUTUBE_URL="https://www.youtube.com/watch?v=${video_id}"
+      sh -c "/bin/go-whisper $*"
+    fi
+  done
+else
+  # Original behavior: process single video
+  sh -c "/bin/go-whisper $*"
+fi
