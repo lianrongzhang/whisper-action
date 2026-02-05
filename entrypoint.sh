@@ -46,17 +46,30 @@ process_youtube_video() {
   # Download audio using yt-dlp
   # Use best audio format and extract to mp3 with 192k quality
   # Use Android and web player clients to bypass bot detection
-  if ! yt-dlp \
+  
+  # Build yt-dlp command with optional cookies support
+  yt_dlp_cmd="yt-dlp \
     -f 'bestaudio/best' \
     --extract-audio \
     --audio-format mp3 \
     --audio-quality 192K \
-    --extractor-args "youtube:player_client=android,web" \
+    --extractor-args \"youtube:player_client=android,web\" \
     --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' \
     --no-check-certificate \
-    --no-warnings \
-    -o "${temp_dir}/audio.%(ext)s" \
-    "${youtube_url}"; then
+    --no-warnings"
+  
+  # Add cookies if provided via INPUT_YOUTUBE_COOKIES environment variable
+  if [ -n "${INPUT_YOUTUBE_COOKIES:-}" ]; then
+    echo "Using provided YouTube cookies for authentication"
+    cookies_file="${temp_dir}/cookies.txt"
+    echo "${INPUT_YOUTUBE_COOKIES}" > "${cookies_file}"
+    yt_dlp_cmd="${yt_dlp_cmd} --cookies \"${cookies_file}\""
+  fi
+  
+  yt_dlp_cmd="${yt_dlp_cmd} -o \"${temp_dir}/audio.%(ext)s\" \"${youtube_url}\""
+  
+  # Execute the command
+  if ! eval "${yt_dlp_cmd}"; then
     echo "Error: yt-dlp failed to download audio"
     rm -rf "${temp_dir}"
     return 1
