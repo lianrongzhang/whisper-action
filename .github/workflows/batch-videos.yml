@@ -10,6 +10,8 @@ jobs:
   batch-process-videos:
     name: Process multiple videos from JSON file
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: checkout
         uses: actions/checkout@v3
